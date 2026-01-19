@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# === Configuration Section ===
+# Directories to back up (customize these, add more paths as needed)
+SOURCE_DIRS="$HOME/Documents $HOME/Pictures"
+
+# Destination for backups (ensure this directory exists and has enough space)
+BACKUP_DIR="/mnt/backup_drive/my_backups"
+
+# Timestamp format
+DATE=$(date +%Y-%m-%d_%H-%M-%S)
+BACKUP_NAME="backup_$DATE.tar.gz"
+
+# Retention policy: number of days to keep backups (e.g., 7 days)
+RETENTION_DAYS=7
+# === End Configuration Section ===
+
+# Create destination directory if it doesn't exist
+mkdir -p "$BACKUP_DIR"
+
+# Start Backup using tar for a full archive
+echo "Starting backup of: $SOURCE_DIRS"
+tar -czf "$BACKUP_DIR/$BACKUP_NAME" $SOURCE_DIRS
+echo "Backup complete: $BACKUP_NAME"
+
+# Check if tar was successful before cleanup
+if [ $? -eq 0 ]; then
+    # Cleanup old backups (files older than RETENTION_DAYS)
+    echo "Cleaning up old backups (older than $RETENTION_DAYS days)..."
+    find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +$RETENTION_DAYS -exec rm {} \;
+    echo "Cleanup complete."
+else
+    echo "Backup failed, skipping cleanup."
+fi
